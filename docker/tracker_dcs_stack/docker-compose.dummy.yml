@@ -16,11 +16,11 @@ services:
       - mosquitto
     command: ['python', 'dummy/sensor.py', 'sensor_1', 'mosquitto']
   
-  low_voltage:
-    image: ghcr.io/cdozen/low_voltage:0.0.1
-    links:
-      - mosquitto
-    command: ['python3', 'hmp.py', 'lw_volt', 'mosquitto']
+#  low_voltage:
+#    image: ghcr.io/cdozen/low_voltage:0.0.1
+#    links:
+#      - mosquitto
+#    command: ['python3', 'hmp.py', 'lw_volt', 'mosquitto']
   
   #web_server:
   #  image: ghcr.io/cdozen/tracker_dcs_web:0.0.1
