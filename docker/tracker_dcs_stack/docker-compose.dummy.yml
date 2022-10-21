@@ -1,17 +1,17 @@
 version: "3"
 services:
   hv:
-    image: ghcr.io/cdozen/dummy:0.0.1
+    image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
     links:
       - mosquitto
     command: ['python', 'dummy/hv.py', 'hv', 'mosquitto']
   lv:
-    image: ghcr.io/cdozen/dummy:0.0.1
+    image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
     links:
       - mosquitto
     command: ['python', 'dummy/hv.py', 'lv', 'mosquitto']
   sensor_1:
-    image: ghcr.io/cdozen/dummy:0.0.1
+    image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
     links:
       - mosquitto
     command: ['python', 'dummy/sensor.py', 'sensor_1', 'mosquitto']
