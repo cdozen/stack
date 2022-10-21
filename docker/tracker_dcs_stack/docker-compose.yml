@@ -39,7 +39,7 @@ services:
     volumes:
       - grafana:/var/lib/grafana
   web_server:
-    image: ghcr.io/cms-tedd-ip2i/tracker_dcs_web:0.0.1
+    image: ghcr.io/cdozen/tracker_dcs_web:0.0.2
     restart: always
     #stdin_open: true
     #tty: true
