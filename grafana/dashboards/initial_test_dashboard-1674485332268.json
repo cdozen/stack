@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -20,20 +23,24 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
   "links": [],
   "liveNow": false,
   "panels": [
     {
-      "datasource": null,
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pMrFWbo4k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -79,8 +86,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 14,
-        "w": 18,
+        "h": 9,
+        "w": 12,
         "x": 0,
         "y": 0
       },
@@ -89,14 +96,21 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
+      "pluginVersion": "9.3.2",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pMrFWbo4k"
+          },
           "query": "from(bucket: \"my-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"sensor_1\" \n  )",
           "refId": "A"
         }
@@ -105,20 +119,20 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
-  "schemaVersion": 31,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-1m",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Test",
-  "uid": "KrDFdlvnk",
-  "version": 1
+  "title": "initial_test_dashboard",
+  "uid": "LouhvboVk",
+  "version": 1,
+  "weekStart": ""
 }

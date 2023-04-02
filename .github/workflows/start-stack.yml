@@ -1,8 +1,7 @@
 name: Docker-Stack
 on:
   push:
-    branches:
-      - 'dev'
+    branches: [dev,main]
     tags:
       - 'v*'
   pull_request:
@@ -31,13 +30,8 @@ jobs:
             username: ${{ github.actor }}
             password: ${{ secrets.GITHUB_TOKEN }}
       
-        - name: Docker-compose start mqtt and stack 
+        - name: Docker compose start mqtt and stack
           run: |
-            cd docker/tracker_dcs_stack
-            pwd
-            echo "---------------------"
-            ls
-            echo $HOME
-            docker-compose -f docker-compose.yml -f docker-compose.dummy.yml up -d
-            docker ps -a 
-            cd - 
+            echo "TRACKER_DCS_INFLUXDB_TOKEN=foobar" > my.env 
+            docker compose up -d
+            docker compose ps

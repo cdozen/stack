@@ -1,36 +1,85 @@
-# stack
-Stack configuration
+# Tedd DCS stack
 
-docker-compose.yml : production stack for influxdb-grafan-nodered dashboard.
+Stack configuration: 
 
-docker-compose.dummy.yml : dummy services for tests, which simulate the behaviour of a high-voltage power supply, a low-voltage power supply, and an environmental sensor. 
+* [docker-compose.yml](docker-compose.yml) : production stack with the core services: 
+  * mosquitto : mqtt broker
+  * web_server : for labview data ingestion
+  * influxdb : time-series database
+  * telegraf : ingests data from the mqtt broker into the database
+  * dashboard : Grafana monitoring dashboard
+  * low_voltage : Control of the Rhode and Schwartz low-voltage power supply
+  * dummy modules for testing: 
+    * a dummy high-voltage power supply, 
+    * a dummy low-voltage power supply, 
+    * a dummy environmental sensor. 
 
-the repository images taken directly from github organization
+## Prerequisites
 
+* Install [docker](https://docs.docker.com/get-docker/)
 
-## To start the stack:
+## Initial setup 
+
+Start the InfluxDB service: 
 
 ```
-cd docker/tracker_dcs_stack/
-
-docker compose -f docker-compose.yml -f docker-compose.dummy.yml up -d 
+docker compose up -d influxdb
 ```
 
+This will create a configuration file for influxdb, `influxdb/config/influx-configs`, 
+with this content (the token will be different): 
+
+```shell
+[default]
+  url = "http://localhost:8086"
+  token = "nGTtMTEsXZlSnz0KOAxbj22f-bAZbAcmOnTSX1q04CjYoZbHKg2Vf-fzb3IxrSgYYuf442ZrDgS8l9WcOOHMSA=="
+  org = "cms-tedd"
+  active = true
 ```
+
+Create a file named `my.env` with this content (make sure to use your own token): 
+
+```shell  
+TRACKER_DCS_INFLUXDB_TOKEN='nGTtMTEsXZlSnz0KOAxbj22f-bAZbAcmOnTSX1q04CjYoZbHKg2Vf-fzb3IxrSgYYuf442ZrDgS8l9WcOOHMSA=='
+```
+
+**WARNING: do not commit this file to git, for security reasons.**
+
+## Start the stack together with the dummy services 
+
+```
+docker compose up -d 
+```
+
 To check the running services:
+
 ```
 docker compose ps 
 ```
 
 ```
-IMAGE                                  COMMAND                    STATUS         PORTS                              NAMES
-ghcr.io/cdozen/dummy:0.0.1             "python dummy/hv.py …"     Up 3 minutes                                      tracker_dcs_stack-lv-1
-ghcr.io/cdozen/tracker_dcs_web:0.0.2   "uvicorn tracker_dcs…"     Up 3 minutes   8001/tcp, 0.0.0.0:8001->8000/tcp   tracker_dcs_stack-web_server-1
-ghcr.io/cdozen/dummy:0.0.1             "python dummy/sensor…"     Up 3 minutes                                      tracker_dcs_stack-sensor_1-1
-ghcr.io/cdozen/dummy:0.0.1             "python dummy/hv.py …"     Up 3 minutes                                      tracker_dcs_stack-hv-1
-eclipse-mosquitto:2.0                  "/docker-entrypoint.…"     Up 3 minutes   0.0.0.0:1883->1883/tcp             tracker_dcs_stack-mosquitto-1
-influxdb:2.0                           "/entrypoint.sh infl…"     Up 3 minutes   0.0.0.0:8086->8086/tcp             tracker_dcs_stack-influxdb-1
-telegraf                               "/entrypoint.sh tele…"     Up 3 minutes   8092/udp, 8125/udp, 8094/tcp       tracker_dcs_stack-telegraf-1
-grafana/grafana                        "/run.sh"                  Up 3 minutes   0.0.0.0:3000->3000/tcp             tracker_dcs_stack-dashboard-1
-
+NAME                  COMMAND                  SERVICE             STATUS              PORTS
+stack-grafana-1       "/run.sh"                grafana             running             0.0.0.0:3001->3000/tcp
+stack-hv-1            "python dummy/hv.py …"   hv                  running             
+stack-influxdb-1      "/entrypoint.sh infl…"   influxdb            running             0.0.0.0:8087->8086/tcp
+stack-low_voltage-1   "python3 hmp.py lw_v…"   low_voltage         exited (1)          
+stack-lv-1            "python dummy/hv.py …"   lv                  running             
+stack-mosquitto-1     "/docker-entrypoint.…"   mosquitto           running             0.0.0.0:1884->1883/tcp
+stack-sensor_1-1      "python dummy/sensor…"   sensor_1            running             
+stack-telegraf-1      "/entrypoint.sh tele…"   telegraf            running             8125/udp
+stack-web_server-1    "uvicorn tracker_dcs…"   web_server          running             0.0.0.0:8001->8000/tcp
 ```
+
+In the case above, I'm running the stack on my mac, which has no access to 
+the low voltage power supply. As a consequence, the low voltage container 
+exits with an error. This is perfectly fine. 
+
+On the DAQ PC however, the container must be running.
+
+## Using the services 
+ 
+* [Mosquitto](doc/mosquitto.md): The stack message broker
+* [Grafana](doc/grafana.md): The dashboard system
+* [Nodered](doc/nodered.md): To be written...
+
+

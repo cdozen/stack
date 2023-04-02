@@ -1,0 +1,104 @@
+version: "3"
+services:
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    restart: always
+    ports:
+      - "1884:1883"
+    expose:
+      - "1883"
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config
+
+  influxdb:
+    image: influxdb:2.0
+    restart: always
+    ports:
+      - "8087:8086"
+    expose:
+      - "8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=dbuser
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=cms-tedd
+      - DOCKER_INFLUXDB_INIT_BUCKET=my-bucket  
+    volumes:
+      - influxdb2:/var/lib/influxdb2
+      - ./influxdb/config:/etc/influxdb2
+
+  telegraf:
+    image: telegraf
+    restart: always
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on: 
+      - mosquitto
+      - influxdb
+    environment: 
+      - TRACKER_DCS_INFLUXDB_TOKEN
+    env_file:
+      - my.env
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    depends_on: 
+      - influxdb
+    volumes:
+      - grafana:/var/lib/grafana
+
+  web_server:
+    image: ghcr.io/cms-tedd-ip2i/tracker_dcs_web:0.1.0
+    restart: always
+    #stdin_open: true
+    #tty: true
+    # port must be open even in production as it's a webserver open to outside
+    # TODO: setup authentication
+    environment:
+      - MQTT_HOST=mosquitto
+    ports:
+      - "8001:8000"
+    expose:
+      - "8001"
+    command: ["uvicorn", "tracker_dcs_web.web_server.app:app", "--host", "0.0.0.0"]
+    volumes:
+      - web_server:/code
+    depends_on:
+      - mosquitto
+    
+  low_voltage:
+    image: ghcr.io/cms-tedd-ip2i/low_voltage:0.0.1
+    command: ['python3', 'hmp.py', 'lw_volt', 'mosquitto']
+    depends_on:
+      - mosquitto
+
+  # Dummy modules for testing
+  hv:
+    image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
+    links:
+      - mosquitto
+    command: [ 'python', 'dummy/hv.py', 'hv', 'mosquitto' ]
+  lv:
+    image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
+    links:
+      - mosquitto
+    command: [ 'python', 'dummy/hv.py', 'lv', 'mosquitto' ]
+  sensor_1:
+    image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
+    links:
+      - mosquitto
+    command: [ 'python', 'dummy/sensor.py', 'sensor_1', 'mosquitto' ]
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+  influxdb2:
+  telegraf.conf:
+  grafana:
+  web_server:
+
