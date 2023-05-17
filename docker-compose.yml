@@ -38,8 +38,8 @@ services:
     depends_on: 
       - mosquitto
       - influxdb
-    environment: 
-      - TRACKER_DCS_INFLUXDB_TOKEN
+    #environment: 
+    #  - TRACKER_DCS_INFLUXDB_TOKEN
     env_file:
       - my.env
 
@@ -51,6 +51,15 @@ services:
       - influxdb
     volumes:
       - grafana:/var/lib/grafana
+  nodered:
+    build: ./node-red
+    ports:
+      - "1880:1880"
+    volumes:
+      - nodered:/data
+    depends_on: 
+      - mosquitto
+      #- influxdb
 
   web_server:
     image: ghcr.io/cms-tedd-ip2i/tracker_dcs_web:0.1.0
@@ -73,6 +82,8 @@ services:
     
   low_voltage:
     image: ghcr.io/cms-tedd-ip2i/low_voltage:0.0.1
+    #candan low_voltage image with linux/amd64 platform
+    #image: ghcr.io/cdozen/low_voltage:latest
     command: ['python3', 'hmp.py', 'lw_volt', 'mosquitto']
     depends_on:
       - mosquitto
@@ -80,16 +91,19 @@ services:
   # Dummy modules for testing
   hv:
     image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
+    #image: ghcr.io/cdozen/dummy:latest
     links:
       - mosquitto
     command: [ 'python', 'dummy/hv.py', 'hv', 'mosquitto' ]
   lv:
     image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
+    #image: ghcr.io/cdozen/dummy:latest
     links:
       - mosquitto
     command: [ 'python', 'dummy/hv.py', 'lv', 'mosquitto' ]
   sensor_1:
     image: ghcr.io/cms-tedd-ip2i/dummy:0.0.1
+    #image: ghcr.io/cdozen/dummy:latest
     links:
       - mosquitto
     command: [ 'python', 'dummy/sensor.py', 'sensor_1', 'mosquitto' ]
@@ -100,5 +114,6 @@ volumes:
   influxdb2:
   telegraf.conf:
   grafana:
+  nodered:
   web_server:
 

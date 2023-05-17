@@ -1,0 +1,13 @@
+telegraf:
+  image: telegraf
+  command: printenv
+  restart: always
+  volumes:
+    - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+  depends_on: 
+    - mosquitto
+    - influxdb
+  environment: 
+    - TRACKER_DCS_INFLUXDB_TOKEN
+  env_file:
+    - my.env 
